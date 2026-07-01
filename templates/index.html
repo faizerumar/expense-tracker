@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpenseFlow - Personal Expense & Income Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Apply theme immediately to prevent flashing
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        if (savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark-mode');
+        } else {
+            document.documentElement.classList.remove('dark-mode');
+        }
+    </script>
+</head>
+<body>
+    <div class="app-layout">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <i data-lucide="wallet"></i>
+                </div>
+                <span class="brand-name">ExpenseFlow</span>
+            </div>
+
+            <nav class="sidebar-menu">
+                <button class="menu-item active" data-tab="home">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="menu-item" data-tab="income">
+                    <i data-lucide="trending-up"></i>
+                    <span>Income</span>
+                </button>
+                <button class="menu-item" data-tab="expenses">
+                    <i data-lucide="receipt"></i>
+                    <span>Expenses</span>
+                </button>
+                <button class="menu-item" data-tab="analytics">
+                    <i data-lucide="pie-chart"></i>
+                    <span>Analytics</span>
+                </button>
+                <button class="menu-item" data-tab="ai-tips">
+                    <i data-lucide="sparkles"></i>
+                    <span>AI Advisor</span>
+                </button>
+                <button class="menu-item" data-tab="profile">
+                    <i data-lucide="user"></i>
+                    <span>Settings</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-user" onclick="openSwitchUserModal()">
+                <div class="user-avatar" id="sidebar-avatar-char">U</div>
+                <div class="user-details">
+                    <span class="user-name" id="sidebar-username">Umar</span>
+                    <span class="user-role">Member</span>
+                </div>
+                <i data-lucide="chevron-right" class="user-arrow"></i>
+            </div>
+        </aside>
+
+        <!-- MAIN WINDOW WRAPPER -->
+        <div class="main-window">
+            
+            <!-- TOP HEADER BAR -->
+            <header class="top-header">
+                <div class="header-greeting">
+                    <h1 id="header-greeting">Hello, Umar</h1>
+                    <p id="header-period" class="text-secondary">Overview</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-add" id="btn-add-income" style="margin-right: 10px;">
+                        <i data-lucide="plus"></i>
+                        <span>Add Income</span>
+                    </button>
+                    <button class="btn btn-primary btn-add" id="btn-add-expense">
+                        <i data-lucide="plus"></i>
+                        <span>Add Expense</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- SCROLLABLE CONTENT VIEWPORTS -->
+            <main class="app-views">
+                
+                <!-- HOME / DASHBOARD VIEW -->
+                <section id="view-home" class="view active">
+                    <div class="dashboard-grid">
+                        <div class="spent-card income-sum-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                            <span class="spent-label" style="opacity: 0.9;">Total Income This Month</span>
+                            <h2 class="spent-value" id="home-total-income">LKR 0</h2>
+                            <p class="spent-count" id="home-income-count" style="opacity: 0.8;">0 deposits</p>
+                        </div>
+
+                        <div class="spent-card" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white;">
+                            <span class="spent-label" style="opacity: 0.9;">Total Spent This Month</span>
+                            <h2 class="spent-value" id="home-total-spent">LKR 0</h2>
+                            <p class="spent-count" id="home-transaction-count" style="opacity: 0.8;">0 transactions</p>
+                        </div>
+                        
+                        <div class="spent-card savings-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">
+                            <span class="spent-label" style="opacity: 0.9;">Net Savings</span>
+                            <h2 class="spent-value" id="home-net-savings">LKR 0</h2>
+                            <p class="spent-count" id="home-savings-status" style="opacity: 0.8;">On Track</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-section section-recent-wide">
+                        <div class="section-header">
+                            <h3 class="section-title">Recent Transactions</h3>
+                        </div>
+                        <div class="expenses-list-wide" id="home-recent-expenses">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- INCOME VIEW -->
+                <section id="view-income" class="view">
+                    <div class="expenses-toolbar">
+                        <div class="search-bar">
+                            <i data-lucide="search"></i>
+                            <input type="text" id="income-search" placeholder="Search income by title or category...">
+                        </div>
+                    </div>
+
+                    <div class="expenses-group-container" id="income-list-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- EXPENSES VIEW -->
+                <section id="view-expenses" class="view">
+                    <div class="expenses-toolbar">
+                        <div class="search-bar">
+                            <i data-lucide="search"></i>
+                            <input type="text" id="expense-search" placeholder="Search expenses by title or category...">
+                        </div>
+                        <div class="categories-filter" id="expense-filters">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="expenses-group-container" id="expenses-list-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- ANALYTICS VIEW -->
+                <section id="view-analytics" class="view">
+                    <div class="analytics-toolbar">
+                        <div class="period-selector">
+                            <button class="btn-icon" id="btn-prev-month">
+                                <i data-lucide="chevron-left"></i>
+                            </button>
+                            <span class="current-period-text" id="analytics-month-text">July 2026</span>
+                            <button class="btn-icon" id="btn-next-month">
+                                <i data-lucide="chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h3 class="card-title">Spending by Category</h3>
+                            <div class="chart-container donut-chart-container">
+                                <div class="donut-chart-wrapper">
+                                    <svg width="200" height="200" viewBox="0 0 42 42" class="donut-svg" id="donut-svg">
+                                        <circle class="donut-hole" cx="21" cy="21" r="15.91549430918954" fill="transparent"></circle>
+                                        <circle class="donut-ring" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--bg-card-element)" stroke-width="3"></circle>
+                                        <!-- Segments will be drawn via JS -->
+                                    </svg>
+                                    <div class="donut-center-info">
+                                        <span class="donut-center-label">Total</span>
+                                        <span class="donut-center-val" id="donut-center-val">LKR 0</span>
+                                    </div>
+                                </div>
+                                <div class="chart-legend" id="donut-legend">
+                                    <!-- Populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <h3 class="card-title">Weekly Breakdown</h3>
+                            <div class="weekly-bar-chart" id="weekly-chart">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AI TIPS VIEW -->
+                <section id="view-ai-tips" class="view">
+                    <div class="advisor-header">
+                        <div class="advisor-title-box">
+                            <h2>AI Financial Advisor</h2>
+                            <p class="text-secondary">Intelligent tips tailored to optimize your cash flow</p>
+                        </div>
+                        <button class="btn btn-secondary btn-icon-label" id="btn-refresh-tips">
+                            <i data-lucide="refresh-cw"></i>
+                            <span>Analyze Profile</span>
+                        </button>
+                    </div>
+
+                    <div class="advisor-stats-row">
+                        <div class="stat-box">
+                            <div class="stat-icon-wrapper color-warning">
+                                <i data-lucide="alert-triangle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="ai-stat-warnings">0</span>
+                                <span class="stat-label">Warnings</span>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-icon-wrapper color-tip">
+                                <i data-lucide="lightbulb"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="ai-stat-tips">0</span>
+                                <span class="stat-label">Savings Tips</span>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-icon-wrapper color-win">
+                                <i data-lucide="trophy"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-number" id="ai-stat-wins">0</span>
+                                <span class="stat-label">Achievements</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-alert">
+                        <i data-lucide="info" class="info-icon"></i>
+                        <p>Tips are generated using heuristic rules analyzing income levels, budget thresholds, and spending concentrations.</p>
+                    </div>
+
+                    <div class="tips-grid" id="ai-tips-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- SETTINGS & PROFILE VIEW -->
+                <section id="view-profile" class="view">
+                    <div class="profile-desktop-grid">
+                        
+                        <div class="profile-card-left">
+                            <div class="profile-header-card">
+                                <div class="profile-avatar" id="profile-avatar-char">U</div>
+                                <h2 class="profile-name" id="profile-username">Umar</h2>
+                                <p class="profile-email" id="profile-email">umar@example.com</p>
+                            </div>
+                            <div class="logout-box">
+                                <a href="/logout" class="btn btn-danger-outline">
+                                    <i data-lucide="log-out"></i> Log Out Account
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="profile-settings-right">
+                            
+                            <!-- EDIT ACCOUNT FORM -->
+                            <div class="settings-group">
+                                <h4 class="settings-group-title">EDIT USER ACCOUNT</h4>
+                                <div class="settings-card">
+                                    <form id="form-edit-profile" style="padding: 15px;">
+                                        <div class="form-group">
+                                            <label for="profile-name-input">Full Name</label>
+                                            <input type="text" id="profile-name-input" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profile-email-input">Email Address</label>
+                                            <input type="email" id="profile-email-input" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" style="margin-top: 10px; width: auto;">Save Account Info</button>
+                                    </form>
+                                </div>
+                            </div>
+
+
+                            
+                            <div class="settings-group">
+                                <h4 class="settings-group-title">APPEARANCE</h4>
+                                <div class="settings-card">
+                                    <div class="setting-item flex-between">
+                                        <div class="flex-align">
+                                            <i data-lucide="palette" class="setting-icon"></i>
+                                            <span class="setting-label">Display Theme</span>
+                                        </div>
+                                        <div class="theme-switcher-buttons">
+                                            <button class="btn-theme" data-theme="light" id="theme-btn-light">☀️ Light</button>
+                                            <button class="btn-theme" data-theme="dark" id="theme-btn-dark">🌙 Dark</button>
+                                            <button class="btn-theme" data-theme="system" id="theme-btn-system">💻 System</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <h4 class="settings-group-title">BUDGET PLAN</h4>
+                                <div class="settings-card">
+                                    <div class="setting-item flex-between">
+                                        <div class="flex-align">
+                                            <i data-lucide="target" class="setting-icon"></i>
+                                            <span class="setting-label">Monthly Limit</span>
+                                        </div>
+                                        <div class="budget-input-wrapper">
+                                            <span class="currency-prefix">LKR</span>
+                                            <input type="number" id="profile-budget-input" class="budget-input" min="0">
+                                        </div>
+                                    </div>
+                                    <div class="setting-item flex-between">
+                                        <div class="flex-align">
+                                            <i data-lucide="bell" class="setting-icon"></i>
+                                            <span class="setting-label">Alert notifications at 80% usage</span>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="profile-alert-checkbox">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-group">
+                                <h4 class="settings-group-title">DATA MANAGEMENT</h4>
+                                <div class="settings-card">
+                                    <a href="/api/export_csv" class="setting-item flex-between text-link" target="_blank">
+                                        <div class="flex-align">
+                                            <i data-lucide="download" class="setting-icon"></i>
+                                            <span class="setting-label">Export Account CSV</span>
+                                        </div>
+                                        <span class="text-secondary" id="profile-record-count">0 records &gt;</span>
+                                    </a>
+                                     <div class="setting-item flex-between cursor-pointer text-danger" id="btn-clear-data">
+                                        <div class="flex-align">
+                                            <i data-lucide="trash-2" class="setting-icon"></i>
+                                            <span class="setting-label">Clear All Ledger Data</span>
+                                        </div>
+                                        <i data-lucide="chevron-right"></i>
+                                    </div>
+                                    <div class="setting-item flex-between cursor-pointer" id="btn-add-user-modal">
+                                        <div class="flex-align">
+                                            <i data-lucide="user-plus" class="setting-icon"></i>
+                                            <span class="setting-label">Add New User Account</span>
+                                        </div>
+                                        <i data-lucide="plus"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+
+        <!-- ADD EXPENSE DIALOG MODAL -->
+        <div class="modal" id="modal-add-expense">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Expense</h2>
+                    <button class="btn-close" id="modal-btn-close">&times;</button>
+                </div>
+                <form id="form-add-expense">
+                    <div class="form-group">
+                        <label for="expense-amount">Amount (LKR)</label>
+                        <input type="number" id="expense-amount" placeholder="0" required min="1" step="any">
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-title">Title / Description</label>
+                        <input type="text" id="expense-title" placeholder="e.g. Bought groceries" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-category">Category</label>
+                        <select id="expense-category" required>
+                            <option value="Groceries">Groceries</option>
+                            <option value="Bus Fare">Bus Fare</option>
+                            <option value="Three-wheel">Three-wheel</option>
+                            <option value="Food">Food</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Bills">Bills</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-date">Date</label>
+                        <input type="date" id="expense-date" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Expense</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ADD INCOME DIALOG MODAL -->
+        <div class="modal" id="modal-add-income">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Income</h2>
+                    <button class="btn-close" id="modal-income-btn-close">&times;</button>
+                </div>
+                <form id="form-add-income">
+                    <div class="form-group">
+                        <label for="income-amount">Amount (LKR)</label>
+                        <input type="number" id="income-amount" placeholder="0" required min="1" step="any">
+                    </div>
+                    <div class="form-group">
+                        <label for="income-title">Title / Description</label>
+                        <input type="text" id="income-title" placeholder="e.g. Monthly salary" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="income-category">Category</label>
+                        <select id="income-category" required>
+                            <option value="Salary">Salary</option>
+                            <option value="Freelance">Freelance</option>
+                            <option value="Investments">Investments</option>
+                            <option value="Gift">Gift</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="income-date">Date</label>
+                        <input type="date" id="income-date" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Income</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ADD USER DIALOG MODAL -->
+        <div class="modal" id="modal-add-user">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Create Additional User Account</h2>
+                    <button class="btn-close" id="modal-user-btn-close">&times;</button>
+                </div>
+                <form id="form-add-user">
+                    <div class="form-group">
+                        <label for="new-username">Full Name</label>
+                        <input type="text" id="new-username" placeholder="e.g. Ali" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-email">Email Address</label>
+                        <input type="email" id="new-email" placeholder="e.g. ali@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">Password</label>
+                        <input type="password" id="new-password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create User</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SWITCH USER DIALOG MODAL -->
+        <div class="modal" id="modal-switch-user">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Switch User Account</h2>
+                    <button class="btn-close" id="modal-switch-btn-close">&times;</button>
+                </div>
+                <div class="switch-user-list" id="switch-user-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding: 5px;">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
